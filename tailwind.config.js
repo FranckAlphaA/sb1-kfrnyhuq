@@ -4,56 +4,43 @@ export default {
   theme: {
     extend: {
       colors: {
-        gold: {
-          50: '#FFFAF0',
-          100: '#FEEBC8',
-          200: '#FBD38D',
-          300: '#F6AD55',
-          400: '#ED8936',
-          500: '#FFD700',
-          600: '#FFA500',
-          700: '#C05621',
-          800: '#9C4221',
-          900: '#7B341E',
+        // Backgrounds (Alpha Alliance editorial palette)
+        bg: {
+          DEFAULT: '#000000',
+          1: '#0A0810',
+          2: '#131019',
+          3: '#1A1623',
+          card: 'rgba(20, 16, 28, 0.55)',
+          'card-hi': 'rgba(28, 22, 38, 0.85)',
         },
-        dark: {
-          50: '#f7f7f7',
-          100: '#e3e3e3',
-          200: '#c8c8c8',
-          300: '#a4a4a4',
-          400: '#818181',
-          500: '#666666',
-          600: '#515151',
-          700: '#434343',
-          800: '#383838',
-          900: '#1a1a1a',
-          950: '#0a0a0a',
-        }
+        // Sophisticated gold
+        gold: {
+          DEFAULT: '#D4A574',
+          warm: '#E6BE8A',
+          deep: '#B8895E',
+          glow: 'rgba(212, 165, 116, 0.35)',
+        },
+        // Text scale
+        text: {
+          DEFAULT: '#F5F2EC',
+          muted: '#A8A39A',
+          dim: '#6B665F',
+        },
+        // Borders
+        border: {
+          DEFAULT: 'rgba(212, 165, 116, 0.10)',
+          mid: 'rgba(212, 165, 116, 0.22)',
+          hi: 'rgba(212, 165, 116, 0.45)',
+        },
+        // Accent
+        green: '#6BBF80',
       },
       fontFamily: {
-        sans: ['Montserrat', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        serif: ['Fraunces', 'Georgia', 'serif'],
       },
-      typography: {
-        DEFAULT: {
-          css: {
-            color: '#a4a4a4',
-            h1: {
-              color: '#ffffff',
-            },
-            h2: {
-              color: '#ffffff',
-            },
-            h3: {
-              color: '#ffffff',
-            },
-            h4: {
-              color: '#ffffff',
-            },
-            strong: {
-              color: '#ffffff',
-            },
-          },
-        },
+      letterSpacing: {
+        widest: '0.22em',
       },
     },
   },
