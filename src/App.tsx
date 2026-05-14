@@ -233,8 +233,12 @@ function LogoMark({ size = 36 }: { size?: number }) {
 // ============================================================
 // APP
 // ============================================================
+const API_BASE = 'https://alphadesk-api.alpha-desk.workers.dev';
+
 function App() {
   const [language, setLanguage] = useState<'en' | 'fr'>('en');
+  const [submitState, setSubmitState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [submitMsg, setSubmitMsg] = useState<string>('');
   const businesses = language === 'en' ? enBusinesses : frBusinesses;
   const strategy = language === 'en' ? enStrategy : frStrategy;
   const governanceFeatures = language === 'en' ? enGovernanceFeatures : frGovernanceFeatures;
@@ -269,8 +273,12 @@ function App() {
       connectDesc: 'Let\'s explore how we can create value together.',
       name: 'Full name',
       email: 'Professional email',
+      company: 'Company (optional)',
       message: 'How can we help?',
       send: 'Send message',
+      sending: 'Sending…',
+      success: '✓ Message received. We\'ll be in touch shortly.',
+      errorGeneric: 'Something went wrong. Please try again or email contact@alpha-alliance.xyz',
       rights: 'All rights reserved.',
     },
     fr: {
@@ -302,8 +310,12 @@ function App() {
       connectDesc: 'Explorons comment nous pouvons créer de la valeur ensemble.',
       name: 'Nom complet',
       email: 'Email professionnel',
+      company: 'Société (optionnel)',
       message: 'Comment pouvons-nous vous aider ?',
       send: 'Envoyer',
+      sending: 'Envoi…',
+      success: '✓ Message reçu. Nous reviendrons vers vous rapidement.',
+      errorGeneric: 'Erreur d\'envoi. Réessaie ou écris à contact@alpha-alliance.xyz',
       rights: 'Tous droits réservés.',
     },
   } as const;
@@ -503,31 +515,82 @@ function App() {
 
         <form
           className="card reveal d-3"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            const data = new FormData(e.currentTarget);
-            const subject = encodeURIComponent('Alpha Alliance Group — Inquiry');
-            const body = encodeURIComponent(
-              `Name: ${data.get('name')}\nEmail: ${data.get('email')}\n\n${data.get('message')}`
-            );
-            window.location.href = `mailto:contact@alpha-alliance.xyz?subject=${subject}&body=${body}`;
+            if (submitState === 'sending') return;
+            const formEl = e.currentTarget;
+            const data = new FormData(formEl);
+            // Honeypot anti-spam: bots fill hidden field
+            if (data.get('honeypot')) {
+              setSubmitState('success');
+              setSubmitMsg(t.success);
+              formEl.reset();
+              return;
+            }
+            setSubmitState('sending');
+            setSubmitMsg('');
+            try {
+              const r = await fetch(`${API_BASE}/api/contact`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  name: data.get('name'),
+                  email: data.get('email'),
+                  company: data.get('company') || undefined,
+                  message: data.get('message'),
+                  source: 'alpha-alliance.xyz/contact',
+                  honeypot: data.get('honeypot') || undefined,
+                }),
+              });
+              const json = await r.json().catch(() => ({}));
+              if (r.ok && json.ok) {
+                setSubmitState('success');
+                setSubmitMsg(t.success);
+                formEl.reset();
+              } else {
+                setSubmitState('error');
+                setSubmitMsg(json.error || t.errorGeneric);
+              }
+            } catch (err) {
+              setSubmitState('error');
+              setSubmitMsg(t.errorGeneric);
+            }
           }}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <input type="text" name="name" placeholder={t.name} required className="field-input" />
-            <input type="email" name="email" placeholder={t.email} required className="field-input" />
+            <input type="text" name="name" placeholder={t.name} required maxLength={100} className="field-input" />
+            <input type="email" name="email" placeholder={t.email} required maxLength={200} className="field-input" />
           </div>
+          <input type="text" name="company" placeholder={t.company} maxLength={120} className="field-input mb-4" />
           <textarea
             name="message"
             rows={5}
             placeholder={t.message}
             required
+            maxLength={5000}
             className="field-input mb-6 resize-y"
           />
-          <button type="submit" className="btn-primary w-full justify-center">
-            {t.send}
-            <ChevronRight className="w-4 h-4" />
+          {/* Honeypot — hidden from users, filled by bots */}
+          <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }} aria-hidden="true">
+            <label>Leave empty</label>
+            <input type="text" name="honeypot" tabIndex={-1} autoComplete="off" />
+          </div>
+          <button
+            type="submit"
+            disabled={submitState === 'sending' || submitState === 'success'}
+            className="btn-primary w-full justify-center disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {submitState === 'sending' ? t.sending : submitState === 'success' ? '✓' : t.send}
+            {submitState === 'idle' && <ChevronRight className="w-4 h-4" />}
           </button>
+          {submitMsg && (
+            <div
+              className={`mt-4 text-sm leading-relaxed ${submitState === 'success' ? 'text-green' : 'text-red-400'}`}
+              role="status"
+            >
+              {submitMsg}
+            </div>
+          )}
         </form>
       </section>
 
