@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer hexagon -->
+  <path d="M256 40L432 144V368L256 472L80 368V144L256 40Z" stroke="#4F46E5" stroke-width="16" stroke-linejoin="round"/>
+  
+  <!-- Inner triangles forming 'A' -->
+  <path d="M256 100L376 280H136L256 100Z" fill="#4F46E5"/>
+  <path d="M256 180L336 320H176L256 180Z" fill="#818CF8"/>
+  
+  <!-- Connecting lines representing alliance -->
+  <path d="M200 280L256 340L312 280" stroke="#4F46E5" stroke-width="12" stroke-linecap="round"/>
+  <path d="M176 320L256 400L336 320" stroke="#4F46E5" stroke-width="12" stroke-linecap="round"/>
+</svg>
