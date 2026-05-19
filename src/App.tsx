@@ -250,7 +250,7 @@ function App() {
       heroTitle2: 'One alliance.',
       heroSub: 'Building a thriving ecosystem through cross-industry collaboration, decentralized governance, and long-term strategic investments.',
       ctaPrimary: 'Discover the universe',
-      ctaSecondary: 'Open Alpha Vision →',
+      ctaSecondary: 'Explore the suite →',
       businessEyebrow: 'Our business universe',
       businessTitle1: 'Nine domains.',
       businessTitle2: 'One ecosystem.',
@@ -287,7 +287,7 @@ function App() {
       heroTitle2: 'Une alliance.',
       heroSub: 'Construire un écosystème prospère grâce à la collaboration inter-secteurs, la gouvernance décentralisée et les investissements stratégiques à long terme.',
       ctaPrimary: 'Découvrir l\'univers',
-      ctaSecondary: 'Ouvrir Alpha Vision →',
+      ctaSecondary: 'Découvrir la suite →',
       businessEyebrow: 'Notre univers d\'affaires',
       businessTitle1: 'Neuf domaines.',
       businessTitle2: 'Un écosystème.',
@@ -352,11 +352,8 @@ function App() {
           </span>
         </a>
         <div className="flex items-center gap-6">
-          <a href="https://vision.alpha-alliance.app" className="hidden md:inline-flex text-sm text-text-muted hover:text-gold transition-colors">
-            Vision
-          </a>
           <a href="https://alpha-alliance.app" className="hidden md:inline-flex text-sm text-text-muted hover:text-gold transition-colors">
-            Suite ↗
+            App ↗
           </a>
           <button
             onClick={toggleLanguage}
@@ -389,7 +386,7 @@ function App() {
             {t.ctaPrimary}
             <ChevronRight className="w-4 h-4" />
           </a>
-          <a href="https://vision.alpha-alliance.app" className="btn-ghost">
+          <a href="https://alpha-alliance.app" className="btn-ghost">
             {t.ctaSecondary}
           </a>
         </div>
@@ -604,8 +601,7 @@ function App() {
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-6 text-xs text-text-dim">
-            <a href="https://alpha-alliance.app" className="hover:text-gold transition-colors">Suite</a>
-            <a href="https://vision.alpha-alliance.app" className="hover:text-gold transition-colors">Vision</a>
+            <a href="https://alpha-alliance.app" className="hover:text-gold transition-colors">App ↗</a>
             <a href="mailto:contact@alpha-alliance.xyz" className="hover:text-gold transition-colors">Contact</a>
             <span>© {new Date().getFullYear()} Alpha Alliance Group. {t.rights}</span>
           </div>
