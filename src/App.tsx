@@ -280,6 +280,14 @@ function App() {
       success: '✓ Message received. We\'ll be in touch shortly.',
       errorGeneric: 'Something went wrong. Please try again or email contact@alpha-alliance.xyz',
       rights: 'All rights reserved.',
+      issueLine: 'Vol. I — The Group — MMXXVI',
+      marqueeItems: [
+        'α — One alliance, nine domains',
+        'Σ — Intelligence before impulse',
+        'Ξ — Decentralized by design',
+        'β — Businesses that compound',
+        'Δ — Built across market cycles',
+      ],
     },
     fr: {
       shaping: 'Strategic Capital Group · 2026',
@@ -317,6 +325,14 @@ function App() {
       success: '✓ Message reçu. Nous reviendrons vers vous rapidement.',
       errorGeneric: 'Erreur d\'envoi. Réessaie ou écris à contact@alpha-alliance.xyz',
       rights: 'Tous droits réservés.',
+      issueLine: 'Vol. I — Le Groupe — MMXXVI',
+      marqueeItems: [
+        'α — Une alliance, neuf domaines',
+        'Σ — L\'intelligence avant l\'impulsion',
+        'Ξ — Décentralisée par conception',
+        'β — Des entreprises qui capitalisent',
+        'Δ — Construite à travers les cycles',
+      ],
     },
   } as const;
 
@@ -337,18 +353,47 @@ function App() {
       },
       { threshold: 0.15, rootMargin: '0px 0px -80px 0px' }
     );
-    document.querySelectorAll('.reveal').forEach((el) => observerRef.current?.observe(el));
+    document.querySelectorAll('.reveal, .rule-double').forEach((el) => observerRef.current?.observe(el));
     return () => observerRef.current?.disconnect();
   }, [language]);
 
+  // Scroll progress — the growing gold rule
+  const progressRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const doc = document.documentElement;
+        const max = doc.scrollHeight - doc.clientHeight;
+        const p = max > 0 ? Math.min(1, doc.scrollTop / max) : 0;
+        if (progressRef.current) progressRef.current.style.transform = `scaleX(${p})`;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen text-text">
-      {/* ===== NAV ===== */}
+      {/* Scroll progress */}
+      <div className="progress-track">
+        <div ref={progressRef} className="progress-fill" />
+      </div>
+
+      {/* ===== NAV / MASTHEAD ===== */}
       <nav className="px-[6vw] py-6 flex items-center justify-between border-b border-border">
         <a href="/" className="flex items-center gap-3 group">
           <LogoMark size={32} />
-          <span className="font-serif text-xl font-semibold tracking-tight">
-            Alpha <span className="italic text-gold">Alliance</span>
+          <span className="flex flex-col">
+            <span className="font-serif text-xl font-semibold tracking-tight leading-tight">
+              Alpha <span className="italic text-gold">Alliance</span>
+            </span>
+            <span className="issue-line">{t.issueLine}</span>
           </span>
         </a>
         <div className="flex items-center gap-6">
@@ -395,7 +440,8 @@ function App() {
       {/* ===== BUSINESS UNIVERSE ===== */}
       <section id="business" className="px-[6vw] py-32 max-w-[1280px] mx-auto">
         <div className="max-w-[720px] mb-20">
-          <div className="section-eyebrow reveal">{t.businessEyebrow}</div>
+          <div className="rule-double" />
+          <div className="section-eyebrow reveal"><span className="no">Nº 01</span> — {t.businessEyebrow}</div>
           <h2 className="section-title mt-5 mb-6 reveal d-1">
             {t.businessTitle1}
             <br />
@@ -441,7 +487,8 @@ function App() {
       {/* ===== STRATEGY ===== */}
       <section className="px-[6vw] py-32 max-w-[1280px] mx-auto border-t border-border">
         <div className="max-w-[720px] mb-20">
-          <div className="section-eyebrow reveal">{t.strategicEyebrow}</div>
+          <div className="rule-double" />
+          <div className="section-eyebrow reveal"><span className="no">Nº 02</span> — {t.strategicEyebrow}</div>
           <h2 className="section-title mt-5 mb-6 reveal d-1">
             {t.strategicTitle1}
             <br />
@@ -464,7 +511,8 @@ function App() {
       {/* ===== GOVERNANCE ===== */}
       <section className="px-[6vw] py-32 max-w-[1280px] mx-auto border-t border-border">
         <div className="max-w-[720px] mb-20">
-          <div className="section-eyebrow reveal">{t.blockchainEyebrow}</div>
+          <div className="rule-double" />
+          <div className="section-eyebrow reveal"><span className="no">Nº 03</span> — {t.blockchainEyebrow}</div>
           <h2 className="section-title mt-5 mb-6 reveal d-1">
             {t.governanceTitle1}
             <br />
@@ -501,7 +549,7 @@ function App() {
       {/* ===== CONTACT ===== */}
       <section className="px-[6vw] py-32 max-w-[820px] mx-auto border-t border-border">
         <div className="text-center mb-14">
-          <div className="section-eyebrow reveal">{t.connectEyebrow}</div>
+          <div className="section-eyebrow reveal"><span className="no">Nº 04</span> — {t.connectEyebrow}</div>
           <h2 className="section-title mt-5 mb-6 reveal d-1">
             {t.connectTitle1}
             <br />
@@ -590,6 +638,18 @@ function App() {
           )}
         </form>
       </section>
+
+      {/* ===== AGATE MARQUEE ===== */}
+      <div className="marquee-strip" aria-hidden="true">
+        <div className="marquee-track">
+          {[...t.marqueeItems, ...t.marqueeItems].map((item, i) => (
+            <span key={i}>
+              {item}
+              <span className="dia">◆</span>
+            </span>
+          ))}
+        </div>
+      </div>
 
       {/* ===== FOOTER ===== */}
       <footer className="px-[6vw] py-12 max-w-[1280px] mx-auto border-t border-border">
