@@ -239,6 +239,23 @@ const API_BASE = 'https://alphadesk-api.alpha-desk.workers.dev';
 // +250ms on the final word, 850ms rise. Computed for the 6-word EN hero.
 const HERO_LAST_AT = 400 + 5 * 90 + 250 + 850;
 
+// Manuscript keywords (EN + FR, accent-normalized) — ignite to italic gold on scroll
+const MANUSCRIPT_KEYWORDS = new Set([
+  'patience', 'precision', 'conviction', 'resist', 'noise', 'discipline', 'clarity', 'themselves',
+  'resister', 'bruit', 'clarte', 'euxmemes',
+]);
+const normalizeWord = (w: string) =>
+  w.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, '');
+function renderManuscriptWords(text: string) {
+  const words = text.split(/\s+/);
+  return words.map((word, i) => (
+    <span key={i} className={MANUSCRIPT_KEYWORDS.has(normalizeWord(word)) ? 'mw kw' : 'mw'}>
+      {word}
+      {i < words.length - 1 ? ' ' : ''}
+    </span>
+  ));
+}
+
 function App() {
   const [language, setLanguage] = useState<'en' | 'fr'>('en');
   const [submitState, setSubmitState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
@@ -255,6 +272,19 @@ function App() {
       heroSub: 'Building a thriving ecosystem through cross-industry collaboration, decentralized governance, and long-term strategic investments.',
       ctaPrimary: 'Discover the universe',
       ctaSecondary: 'Explore the suite →',
+      manifestoEyebrow: 'The argument',
+      pullQuote: [
+        { text: 'For those who ' },
+        { text: 'wait', sheen: true },
+        { text: ', then ' },
+        { text: 'move', sheen: true },
+        { text: '.' },
+      ],
+      manuscript: [
+        'We did not build a conglomerate to chase every market. We built one alliance to compound conviction across many — patience where others rush, precision where others guess.',
+        'Each company stands on its own, led by experts who own a real stake. The group does not micromanage; it aligns, capitalizes, and lets sound businesses resist the noise and grow with discipline.',
+        'What we offer partners and token holders is clarity of structure and shared upside — never hollow promises. We build the long-term infrastructure for those who think for themselves.',
+      ],
       businessEyebrow: 'Our business universe',
       businessTitle1: 'Nine domains.',
       businessTitle2: 'One ecosystem.',
@@ -300,6 +330,19 @@ function App() {
       heroSub: 'Construire un écosystème prospère grâce à la collaboration inter-secteurs, la gouvernance décentralisée et les investissements stratégiques à long terme.',
       ctaPrimary: 'Découvrir l\'univers',
       ctaSecondary: 'Découvrir la suite →',
+      manifestoEyebrow: 'L\'argument',
+      pullQuote: [
+        { text: 'À ceux qui ' },
+        { text: 'attendent', sheen: true },
+        { text: ', puis ' },
+        { text: 'agissent', sheen: true },
+        { text: '.' },
+      ],
+      manuscript: [
+        'Nous n\'avons pas bâti un conglomérat pour courir après chaque marché. Nous avons bâti une alliance pour capitaliser la conviction sur plusieurs — la patience là où d\'autres se précipitent, la précision là où d\'autres devinent.',
+        'Chaque entreprise tient sur ses propres jambes, dirigée par des experts qui détiennent une vraie participation. Le groupe ne micro-gère pas ; il aligne, capitalise et laisse des activités saines résister au bruit et croître avec discipline.',
+        'Ce que nous offrons à nos partenaires et aux détenteurs de jetons, c\'est une clarté de structure et un partage de la valeur — jamais des promesses creuses. Nous construisons l\'infrastructure de long terme pour ceux qui pensent par eux-mêmes.',
+      ],
       businessEyebrow: 'Notre univers d\'affaires',
       businessTitle1: 'Neuf domaines.',
       businessTitle2: 'Un écosystème.',
@@ -478,6 +521,63 @@ function App() {
     return () => cleanups.forEach((fn) => fn());
   }, [language]);
 
+  // Manuscript word-ignition (scroll) + pull-quote sheen sweep (one-shot)
+  useEffect(() => {
+    if (document.documentElement.classList.contains('reduced')) {
+      document.querySelectorAll('.manuscript .mw, .sheen').forEach((el) => el.classList.add('lit'));
+      return;
+    }
+
+    const sheenIO = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) {
+            en.target.classList.add('lit');
+            sheenIO.unobserve(en.target);
+          }
+        });
+      },
+      { threshold: 0.6 }
+    );
+    document.querySelectorAll('[data-sheen]').forEach((el) => sheenIO.observe(el));
+
+    let msIndex: Array<{ el: Element; top: number }> = [];
+    let pointer = 0;
+    const build = () => {
+      const sy = window.pageYOffset;
+      msIndex = Array.from(document.querySelectorAll('.manuscript .mw'))
+        .filter((el) => !el.classList.contains('lit'))
+        .map((el) => ({ el, top: el.getBoundingClientRect().top + sy }))
+        .sort((a, b) => a.top - b.top);
+      pointer = 0;
+    };
+    const onScroll = () => {
+      const line = window.pageYOffset + window.innerHeight * 0.62;
+      while (pointer < msIndex.length && msIndex[pointer].top < line) {
+        msIndex[pointer].el.classList.add('lit');
+        pointer++;
+      }
+    };
+    build();
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    let rt = 0;
+    const onResize = () => {
+      window.clearTimeout(rt);
+      rt = window.setTimeout(() => {
+        build();
+        onScroll();
+      }, 200);
+    };
+    window.addEventListener('resize', onResize);
+    return () => {
+      sheenIO.disconnect();
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onResize);
+      window.clearTimeout(rt);
+    };
+  }, [language]);
+
   return (
     <div className="min-h-screen text-text">
       {/* Scroll progress */}
@@ -553,11 +653,37 @@ function App() {
         </section>
       </div>
 
+      {/* ===== MANIFESTO / PHILOSOPHY ===== */}
+      <section className="px-[6vw] py-32 max-w-[1280px] mx-auto border-t border-border">
+        <div className="max-w-[820px]">
+          <div className="rule-double" />
+          <div className="section-eyebrow reveal"><span className="no">Nº 01</span> — {t.manifestoEyebrow}</div>
+          <blockquote className="pull-quote text-text reveal d-1 mt-10">
+            <span className="q">“</span>
+            {(t.pullQuote as ReadonlyArray<{ text: string; sheen?: boolean }>).map((seg, i) =>
+              seg.sheen ? (
+                <span key={i} className="sheen" data-sheen>{seg.text}</span>
+              ) : (
+                <React.Fragment key={i}>{seg.text}</React.Fragment>
+              )
+            )}
+            <span className="q">”</span>
+          </blockquote>
+          <div className="manuscript reveal d-2">
+            {t.manuscript.map((para, pi) => (
+              <p key={`${language}-${pi}`} className={pi === 0 ? 'dropcap' : undefined}>
+                {renderManuscriptWords(para)}
+              </p>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ===== BUSINESS UNIVERSE ===== */}
       <section id="business" className="px-[6vw] py-32 max-w-[1280px] mx-auto">
         <div className="max-w-[720px] mb-20">
           <div className="rule-double" />
-          <div className="section-eyebrow reveal"><span className="no">Nº 01</span> — {t.businessEyebrow}</div>
+          <div className="section-eyebrow reveal"><span className="no">Nº 02</span> — {t.businessEyebrow}</div>
           <h2 className="section-title mt-5 mb-6 reveal d-1">
             {t.businessTitle1}
             <br />
@@ -604,7 +730,7 @@ function App() {
       <section className="px-[6vw] py-32 max-w-[1280px] mx-auto border-t border-border">
         <div className="max-w-[720px] mb-20">
           <div className="rule-double" />
-          <div className="section-eyebrow reveal"><span className="no">Nº 02</span> — {t.strategicEyebrow}</div>
+          <div className="section-eyebrow reveal"><span className="no">Nº 03</span> — {t.strategicEyebrow}</div>
           <h2 className="section-title mt-5 mb-6 reveal d-1">
             {t.strategicTitle1}
             <br />
@@ -628,7 +754,7 @@ function App() {
       <section className="px-[6vw] py-32 max-w-[1280px] mx-auto border-t border-border">
         <div className="max-w-[720px] mb-20">
           <div className="rule-double" />
-          <div className="section-eyebrow reveal"><span className="no">Nº 03</span> — {t.blockchainEyebrow}</div>
+          <div className="section-eyebrow reveal"><span className="no">Nº 04</span> — {t.blockchainEyebrow}</div>
           <h2 className="section-title mt-5 mb-6 reveal d-1">
             {t.governanceTitle1}
             <br />
@@ -665,7 +791,7 @@ function App() {
       {/* ===== CONTACT ===== */}
       <section className="px-[6vw] py-32 max-w-[820px] mx-auto border-t border-border">
         <div className="text-center mb-14">
-          <div className="section-eyebrow reveal"><span className="no">Nº 04</span> — {t.connectEyebrow}</div>
+          <div className="section-eyebrow reveal"><span className="no">Nº 05</span> — {t.connectEyebrow}</div>
           <h2 className="section-title mt-5 mb-6 reveal d-1">
             {t.connectTitle1}
             <br />

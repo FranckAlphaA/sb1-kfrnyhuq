@@ -19,6 +19,8 @@
   --gold-warm: #E6BE8A;
   --gold-deep: #B8895E;
   --gold-glow: rgba(212, 165, 116, 0.35);
+  --ember: #43403A; /* manuscript words before ignition */
+  --rule: rgba(212, 165, 116, 0.22);
   --green: #6BBF80;
   --sans: 'Inter', -apple-system, system-ui, sans-serif;
   --serif: 'Fraunces', Georgia, serif;
@@ -264,6 +266,56 @@ body::after {
 .reveal.d-3 { transition-delay: 0.24s; }
 .reveal.d-4 { transition-delay: 0.32s; }
 .reveal.d-5 { transition-delay: 0.40s; }
+
+/* ===== PHILOSOPHY / MANIFESTO (ported from alpha-alliance.app) ===== */
+.pull-quote {
+  font-family: var(--serif);
+  font-size: clamp(2.1rem, 5vw, 4rem);
+  font-weight: 420;
+  line-height: 1.16;
+  letter-spacing: -0.01em;
+  margin: 0 0 70px;
+  max-width: 21ch;
+}
+.pull-quote .q { color: var(--gold); font-size: 1.18em; }
+.sheen {
+  background: linear-gradient(105deg, #B8895E 0%, #D4A574 38%, #F5E6C8 50%, #D4A574 62%, #B8895E 100%);
+  background-size: 250% 100%;
+  background-position: 120% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  contain: paint;
+  font-style: italic;
+}
+.sheen.lit { animation: sheenSweep 1400ms var(--ease) forwards; }
+@keyframes sheenSweep { from { background-position: 120% 0; } to { background-position: -20% 0; } }
+
+.manuscript {
+  columns: 2;
+  column-gap: 48px;
+  margin-bottom: 20px;
+}
+@media (max-width: 768px) { .manuscript { columns: 1; } }
+.manuscript p { margin-bottom: 1.2em; font-size: 1rem; line-height: 1.75; break-inside: avoid-column; }
+.manuscript .mw { color: var(--ember); transition: color 600ms ease; }
+.manuscript .mw.lit { color: rgba(245, 242, 236, 0.85); }
+.manuscript .mw.kw { font-style: italic; }
+.manuscript .mw.kw.lit { color: var(--gold); }
+.manuscript .dropcap::first-letter {
+  float: left;
+  font-family: var(--serif);
+  font-size: 4.6em;
+  line-height: 0.8;
+  padding-right: 0.1em;
+  padding-top: 0.05em;
+  color: var(--gold);
+  font-style: italic;
+}
+html.reduced .sheen { background-position: 50% 0; animation: none; }
+html.reduced .manuscript .mw { color: rgba(245, 242, 236, 0.85); transition: none; }
+html.reduced .manuscript .mw.kw { color: var(--gold); }
 
 /* ===== COLD OPEN HERO SEQUENCE (matches alpha-alliance.app) ===== */
 
