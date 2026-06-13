@@ -22,6 +22,7 @@
   --green: #6BBF80;
   --sans: 'Inter', -apple-system, system-ui, sans-serif;
   --serif: 'Fraunces', Georgia, serif;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
@@ -263,6 +264,97 @@ body::after {
 .reveal.d-3 { transition-delay: 0.24s; }
 .reveal.d-4 { transition-delay: 0.32s; }
 .reveal.d-5 { transition-delay: 0.40s; }
+
+/* ===== COLD OPEN HERO SEQUENCE (matches alpha-alliance.app) ===== */
+
+/* Word stagger — each word rises out of an overflow-hidden clip */
+.hero-h1 .w {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+.hero-h1 .wi {
+  display: inline-block;
+  transform: translateY(112%);
+}
+.hero-h1 .wi.up {
+  transform: translateY(0);
+  transition: transform 850ms var(--ease);
+}
+.hero-h1 .wi.settle {
+  animation: settle 850ms var(--ease);
+}
+@keyframes settle {
+  0%   { transform: translateY(0) scale(1.04); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* Kicker / deck / actions fade in sequence */
+.hero-fade { opacity: 0; }
+.hero-fade.on {
+  opacity: 1;
+  transition: opacity 400ms ease;
+}
+
+/* Hero particles video (gold particles, validated asset) */
+.hero-video-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.hero-video {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 100%; min-height: 100%;
+  width: auto; height: auto;
+  object-fit: cover;
+  mix-blend-mode: screen;
+  opacity: 0.5;
+}
+.hero-video-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(10,14,21,0.75) 0%, rgba(10,14,21,0.4) 35%, rgba(10,14,21,0) 70%);
+  pointer-events: none;
+}
+
+/* Quiet link — gold underline draws on hover */
+.link-quiet {
+  position: relative;
+  padding-bottom: 3px;
+  text-decoration: none;
+}
+.link-quiet::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 1px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 250ms var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .link-quiet:hover::after { transform: scaleX(1); }
+}
+.link-quiet:focus-visible { outline: none; }
+.link-quiet:focus-visible::after { transform: scaleX(1); }
+
+/* Reduced motion — html.reduced set pre-paint in index.html */
+html.reduced .hero-h1 .wi { transform: translateY(0); transition: none; animation: none; }
+html.reduced .hero-fade { opacity: 1; transition: none; }
+html.reduced .reveal { opacity: 1; transform: none; transition: none; }
+html.reduced .rule-double { transform: scaleX(1); transition: none; }
+html.reduced .marquee-track { animation: none; }
+html.reduced .eyebrow-dot { animation: none; }
+html.reduced .hero-video { display: none; }
+html.reduced .progress-fill { box-shadow: none; }
 
 /* ===== PRIVATE LEDGER SIGNATURES (matches alpha-alliance.app) ===== */
 

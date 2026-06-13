@@ -235,6 +235,10 @@ function LogoMark({ size = 36 }: { size?: number }) {
 // ============================================================
 const API_BASE = 'https://alphadesk-api.alpha-desk.workers.dev';
 
+// Cold open timings (matches alpha-alliance.app): base 400ms, 90ms/word,
+// +250ms on the final word, 850ms rise. Computed for the 6-word EN hero.
+const HERO_LAST_AT = 400 + 5 * 90 + 250 + 850;
+
 function App() {
   const [language, setLanguage] = useState<'en' | 'fr'>('en');
   const [submitState, setSubmitState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
@@ -339,6 +343,41 @@ function App() {
   const t = text[language];
   const toggleLanguage = () => setLanguage(language === 'en' ? 'fr' : 'en');
 
+  // Cold open hero sequence — words rise in cascade after the intro overlay
+  const [heroOn, setHeroOn] = useState(false);
+  const [heroDone, setHeroDone] = useState(false);
+  useEffect(() => {
+    const introDelay = (window as unknown as { __aaIntroRan?: boolean }).__aaIntroRan ? 950 : 0;
+    const t1 = window.setTimeout(() => setHeroOn(true), introDelay);
+    const t2 = window.setTimeout(() => setHeroDone(true), introDelay + HERO_LAST_AT + 950);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, []);
+
+  const heroWords1 = t.heroTitle1.split(' ');
+  const heroWords2 = t.heroTitle2.split(' ');
+  const totalWords = heroWords1.length + heroWords2.length;
+  const heroWord = (word: string, idx: number, gold: boolean) => {
+    const isFinal = idx === totalWords - 1;
+    const delay = 400 + idx * 90 + (isFinal ? 250 : 0);
+    return (
+      <React.Fragment key={`${language}-${idx}`}>
+        <span className="w">
+          <span
+            className={`wi${gold ? ' it text-gold-gradient' : ''}${heroOn ? ' up' : ''}${
+              isFinal && heroOn && !heroDone ? ' settle' : ''
+            }`}
+            style={heroDone ? undefined : { transitionDelay: `${delay}ms`, animationDelay: `${delay}ms` }}
+          >
+            {word}
+          </span>
+        </span>{' '}
+      </React.Fragment>
+    );
+  };
+
   // Reveal on scroll
   const observerRef = useRef<IntersectionObserver | null>(null);
   useEffect(() => {
@@ -378,6 +417,67 @@ function App() {
     };
   }, []);
 
+  // Magnetic CTAs + subtle card tilt — hover-capable pointers only, never under reduced motion
+  useEffect(() => {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    if (document.documentElement.classList.contains('reduced')) return;
+    const cleanups: Array<() => void> = [];
+
+    document.querySelectorAll<HTMLElement>('[data-magnetic]').forEach((btn) => {
+      let tx = 0, ty = 0, cx = 0, cy = 0, raf: number | null = null;
+      const tick = () => {
+        cx += (tx - cx) * 0.18;
+        cy += (ty - cy) * 0.18;
+        btn.style.transform = `translate(${cx.toFixed(2)}px,${cy.toFixed(2)}px)`;
+        if (Math.abs(tx - cx) > 0.1 || Math.abs(ty - cy) > 0.1) raf = requestAnimationFrame(tick);
+        else raf = null;
+      };
+      const move = (e: PointerEvent) => {
+        const r = btn.getBoundingClientRect();
+        tx = Math.max(-4, Math.min(4, (e.clientX - (r.left + r.width / 2)) * 0.08));
+        ty = Math.max(-4, Math.min(4, (e.clientY - (r.top + r.height / 2)) * 0.08));
+        if (raf === null) raf = requestAnimationFrame(tick);
+      };
+      const leave = () => {
+        tx = 0;
+        ty = 0;
+        if (raf === null) raf = requestAnimationFrame(tick);
+      };
+      btn.addEventListener('pointermove', move);
+      btn.addEventListener('pointerleave', leave);
+      cleanups.push(() => {
+        btn.removeEventListener('pointermove', move);
+        btn.removeEventListener('pointerleave', leave);
+        if (raf !== null) cancelAnimationFrame(raf);
+        btn.style.transform = '';
+      });
+    });
+
+    document.querySelectorAll<HTMLElement>('.card:not(form)').forEach((card) => {
+      const move = (e: PointerEvent) => {
+        const r = card.getBoundingClientRect();
+        const nx = (e.clientX - r.left) / r.width - 0.5;
+        const ny = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transition = 'border-color 0.25s, transform 150ms linear';
+        card.style.transform = `perspective(1200px) rotateX(${(-ny * 1.6).toFixed(2)}deg) rotateY(${(nx * 0.8).toFixed(2)}deg) translateY(-2px)`;
+      };
+      const leave = () => {
+        card.style.transition = 'border-color 0.25s, transform 300ms cubic-bezier(0.16,1,0.3,1)';
+        card.style.transform = '';
+      };
+      card.addEventListener('pointermove', move);
+      card.addEventListener('pointerleave', leave);
+      cleanups.push(() => {
+        card.removeEventListener('pointermove', move);
+        card.removeEventListener('pointerleave', leave);
+        card.style.transition = '';
+        card.style.transform = '';
+      });
+    });
+
+    return () => cleanups.forEach((fn) => fn());
+  }, [language]);
+
   return (
     <div className="min-h-screen text-text">
       {/* Scroll progress */}
@@ -397,7 +497,7 @@ function App() {
           </span>
         </a>
         <div className="flex items-center gap-6">
-          <a href="https://alpha-alliance.app" className="hidden md:inline-flex text-sm text-text-muted hover:text-gold transition-colors">
+          <a href="https://alpha-alliance.app" className="link-quiet hidden md:inline-flex text-sm text-text-muted hover:text-gold transition-colors">
             App ↗
           </a>
           <button
@@ -413,29 +513,45 @@ function App() {
       </nav>
 
       {/* ===== HERO ===== */}
-      <section className="px-[6vw] pt-32 pb-40 max-w-[1280px] mx-auto">
-        <div className="eyebrow reveal in">
-          <span className="eyebrow-dot"></span>
-          {t.shaping}
+      <div className="relative overflow-hidden">
+        <div className="hero-video-wrap" aria-hidden="true">
+          <video className="hero-video" autoPlay muted loop playsInline preload="metadata">
+            <source src="https://alpha-alliance.app/assets/hero-particles.mp4" type="video/mp4" />
+          </video>
         </div>
-        <h1 className="display mt-8 mb-10 max-w-[900px]">
-          {t.heroTitle1}
-          <br />
-          <span className="it text-gold-gradient">{t.heroTitle2}</span>
-        </h1>
-        <p className="text-lg md:text-xl text-text-muted max-w-[640px] leading-relaxed mb-14">
-          {t.heroSub}
-        </p>
-        <div className="flex flex-wrap items-center gap-4">
-          <a href="#business" className="btn-primary">
-            {t.ctaPrimary}
-            <ChevronRight className="w-4 h-4" />
-          </a>
-          <a href="https://alpha-alliance.app" className="btn-ghost">
-            {t.ctaSecondary}
-          </a>
-        </div>
-      </section>
+        <section className="px-[6vw] pt-32 pb-40 max-w-[1280px] mx-auto">
+          <div
+            className={`eyebrow hero-fade${heroOn ? ' on' : ''}`}
+            style={heroDone ? undefined : { transitionDelay: '250ms' }}
+          >
+            <span className="eyebrow-dot"></span>
+            {t.shaping}
+          </div>
+          <h1 className="display hero-h1 mt-8 mb-10 max-w-[900px]">
+            {heroWords1.map((w, i) => heroWord(w, i, false))}
+            <br />
+            {heroWords2.map((w, i) => heroWord(w, heroWords1.length + i, true))}
+          </h1>
+          <p
+            className={`text-lg md:text-xl text-text-muted max-w-[640px] leading-relaxed mb-14 hero-fade${heroOn ? ' on' : ''}`}
+            style={heroDone ? undefined : { transitionDelay: `${HERO_LAST_AT - 650}ms` }}
+          >
+            {t.heroSub}
+          </p>
+          <div
+            className={`flex flex-wrap items-center gap-4 hero-fade${heroOn ? ' on' : ''}`}
+            style={heroDone ? undefined : { transitionDelay: `${HERO_LAST_AT - 450}ms` }}
+          >
+            <a href="#business" className="btn-primary" data-magnetic>
+              {t.ctaPrimary}
+              <ChevronRight className="w-4 h-4" />
+            </a>
+            <a href="https://alpha-alliance.app" className="btn-ghost" data-magnetic>
+              {t.ctaSecondary}
+            </a>
+          </div>
+        </section>
+      </div>
 
       {/* ===== BUSINESS UNIVERSE ===== */}
       <section id="business" className="px-[6vw] py-32 max-w-[1280px] mx-auto">
@@ -661,8 +777,8 @@ function App() {
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-6 text-xs text-text-dim">
-            <a href="https://alpha-alliance.app" className="hover:text-gold transition-colors">App ↗</a>
-            <a href="mailto:contact@alpha-alliance.xyz" className="hover:text-gold transition-colors">Contact</a>
+            <a href="https://alpha-alliance.app" className="link-quiet hover:text-gold transition-colors">App ↗</a>
+            <a href="mailto:contact@alpha-alliance.xyz" className="link-quiet hover:text-gold transition-colors">Contact</a>
             <span>© {new Date().getFullYear()} Alpha Alliance Group. {t.rights}</span>
           </div>
         </div>

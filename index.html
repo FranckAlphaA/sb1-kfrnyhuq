@@ -9,9 +9,66 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fraunces:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <script>
+      (function () {
+        try { if (sessionStorage.getItem('aa_xyz_intro')) document.documentElement.classList.add('intro-seen'); } catch (e) {}
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('reduced');
+      })();
+    </script>
+    <style>
+      #intro { position: fixed; inset: 0; background: #0A0E15; z-index: 200; display: flex; align-items: center; justify-content: center; transition: opacity 300ms ease; }
+      #intro.done { opacity: 0; pointer-events: none; }
+      html.intro-seen #intro, html.reduced #intro { display: none; }
+      #intro svg { width: 72px; height: 72px; }
+      #intro .hex-path, #intro .alpha-path { fill: none; stroke: #D4A574; stroke-width: 1.5; }
+    </style>
   </head>
   <body>
+    <div id="intro" aria-hidden="true">
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <polygon class="hex-path" points="32,5 54,18 54,46 32,59 10,46 10,18"/>
+        <text class="alpha-path" x="32" y="32" font-family="Georgia, serif" font-size="30" font-style="italic" text-anchor="middle" dominant-baseline="central">α</text>
+      </svg>
+    </div>
     <div id="root"></div>
+    <script>
+      (function () {
+        var intro = document.getElementById('intro');
+        var introSeen = document.documentElement.classList.contains('intro-seen');
+        var reduced = document.documentElement.classList.contains('reduced');
+        var introDone = false;
+        function endIntro() {
+          if (introDone || !intro) return;
+          introDone = true;
+          intro.classList.add('done');
+          intro.addEventListener('transitionend', function () { if (intro.parentNode) intro.parentNode.removeChild(intro); });
+        }
+        if (intro && !introSeen && !reduced) {
+          window.__aaIntroRan = true;
+          try { sessionStorage.setItem('aa_xyz_intro', '1'); } catch (e) {}
+          var hex = intro.querySelector('.hex-path');
+          var alpha = intro.querySelector('.alpha-path');
+          try {
+            var hl = hex.getTotalLength();
+            hex.style.strokeDasharray = hl;
+            hex.style.strokeDashoffset = hl;
+            hex.style.transition = 'stroke-dashoffset 500ms cubic-bezier(0.16,1,0.3,1)';
+            alpha.style.opacity = '0';
+            alpha.style.transition = 'opacity 550ms cubic-bezier(0.16,1,0.3,1) 350ms';
+            requestAnimationFrame(function () {
+              hex.style.strokeDashoffset = '0';
+              alpha.style.opacity = '1';
+            });
+          } catch (e) {}
+          setTimeout(endIntro, 950);
+          ['wheel', 'touchstart', 'keydown', 'pointerdown'].forEach(function (ev) {
+            window.addEventListener(ev, endIntro, { once: true, passive: true });
+          });
+        } else {
+          if (intro && intro.parentNode) intro.parentNode.removeChild(intro);
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
