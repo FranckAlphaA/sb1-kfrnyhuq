@@ -241,19 +241,24 @@ const HERO_LAST_AT = 400 + 5 * 90 + 250 + 850;
 
 // Manuscript keywords (EN + FR, accent-normalized) — ignite to italic gold on scroll
 const MANUSCRIPT_KEYWORDS = new Set([
-  'patience', 'precision', 'conviction', 'resist', 'noise', 'discipline', 'clarity', 'themselves',
-  'resister', 'bruit', 'clarte', 'euxmemes',
+  'freedom', 'autonomy', 'blockchain', 'collective', 'decentralized', 'destiny', 'dreams',
+  'liberte', 'autonomie', 'collectif', 'decentralise', 'destin', 'reves',
 ]);
 const normalizeWord = (w: string) =>
   w.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, '');
 function renderManuscriptWords(text: string) {
   const words = text.split(/\s+/);
-  return words.map((word, i) => (
-    <span key={i} className={MANUSCRIPT_KEYWORDS.has(normalizeWord(word)) ? 'mw kw' : 'mw'}>
-      {word}
-      {i < words.length - 1 ? ' ' : ''}
-    </span>
-  ));
+  return words.map((word, i) => {
+    // Match on the segment after any elision (l'autonomie → autonomie) so the whole token ignites
+    const lastSeg = word.split(/['’]/).pop() || word;
+    const isKw = MANUSCRIPT_KEYWORDS.has(normalizeWord(lastSeg));
+    return (
+      <span key={i} className={isKw ? 'mw kw' : 'mw'}>
+        {word}
+        {i < words.length - 1 ? ' ' : ''}
+      </span>
+    );
+  });
 }
 
 function App() {
@@ -272,18 +277,19 @@ function App() {
       heroSub: 'Building a thriving ecosystem through cross-industry collaboration, decentralized governance, and long-term strategic investments.',
       ctaPrimary: 'Discover the universe',
       ctaSecondary: 'Explore the suite →',
-      manifestoEyebrow: 'The argument',
+      manifestoEyebrow: 'The manifesto',
       pullQuote: [
-        { text: 'For those who ' },
-        { text: 'wait', sheen: true },
-        { text: ', then ' },
-        { text: 'move', sheen: true },
-        { text: '.' },
+        { text: 'We build our ' },
+        { text: 'freedom', sheen: true },
+        { text: ', and make our ' },
+        { text: 'dreams', sheen: true },
+        { text: ' real.' },
       ],
       manuscript: [
-        'We did not build a conglomerate to chase every market. We built one alliance to compound conviction across many — patience where others rush, precision where others guess.',
-        'Each company stands on its own, led by experts who own a real stake. The group does not micromanage; it aligns, capitalizes, and lets sound businesses resist the noise and grow with discipline.',
-        'What we offer partners and token holders is clarity of structure and shared upside — never hollow promises. We build the long-term infrastructure for those who think for themselves.',
+        'We are Alpha Alliance. Our mission is to build an empire founded on individual freedom, financial autonomy, and a break from the traditional model — so often limiting and constraining.',
+        'We believe in the power of a virtuous circle of many businesses and many brands, where each venture feeds and amplifies the success of the others, with blockchain as the central, strategic thread.',
+        'Why? We build our freedom and make our dreams real. How? Through the leverage of our many skills, the power of the collective, and the unique strengths of blockchain. What? We innovate, invest, advise, lease, and create without limits — because each company strengthens the others.',
+        'Alpha Alliance embodies the decentralized, transparent, and audacious future of modern commerce. Join us to write the story of those who chose to master their own destiny. Welcome to Alpha Alliance.',
       ],
       businessEyebrow: 'Our business universe',
       businessTitle1: 'Nine domains.',
@@ -330,18 +336,19 @@ function App() {
       heroSub: 'Construire un écosystème prospère grâce à la collaboration inter-secteurs, la gouvernance décentralisée et les investissements stratégiques à long terme.',
       ctaPrimary: 'Découvrir l\'univers',
       ctaSecondary: 'Découvrir la suite →',
-      manifestoEyebrow: 'L\'argument',
+      manifestoEyebrow: 'Le manifeste',
       pullQuote: [
-        { text: 'À ceux qui ' },
-        { text: 'attendent', sheen: true },
-        { text: ', puis ' },
-        { text: 'agissent', sheen: true },
+        { text: 'Nous créons notre ' },
+        { text: 'liberté', sheen: true },
+        { text: ', et réalisons nos ' },
+        { text: 'rêves', sheen: true },
         { text: '.' },
       ],
       manuscript: [
-        'Nous n\'avons pas bâti un conglomérat pour courir après chaque marché. Nous avons bâti une alliance pour capitaliser la conviction sur plusieurs — la patience là où d\'autres se précipitent, la précision là où d\'autres devinent.',
-        'Chaque entreprise tient sur ses propres jambes, dirigée par des experts qui détiennent une vraie participation. Le groupe ne micro-gère pas ; il aligne, capitalise et laisse des activités saines résister au bruit et croître avec discipline.',
-        'Ce que nous offrons à nos partenaires et aux détenteurs de jetons, c\'est une clarté de structure et un partage de la valeur — jamais des promesses creuses. Nous construisons l\'infrastructure de long terme pour ceux qui pensent par eux-mêmes.',
+        'Nous sommes Alpha Alliance. Notre mission est de bâtir un empire fondé sur la liberté individuelle, l\'autonomie financière et la sortie du modèle traditionnel, souvent limitant et contraignant.',
+        'Nous croyons au pouvoir d\'un cercle vertueux multi-business et multi-marques, où chaque activité nourrit et amplifie la réussite des autres, avec une utilisation centrale et stratégique de la blockchain.',
+        'Pourquoi ? Nous créons notre liberté et réalisons nos rêves. Comment ? Par le levier de nos multiples compétences, la puissance du collectif et les atouts uniques de la blockchain. Quoi ? Nous innovons, investissons, conseillons, louons et créons sans limites — car chaque entreprise renforce les autres.',
+        'Alpha Alliance incarne l\'avenir décentralisé, transparent et audacieux du commerce moderne. Rejoignez-nous pour écrire l\'histoire de ceux qui ont choisi de maîtriser leur destin. Bienvenue dans Alpha Alliance.',
       ],
       businessEyebrow: 'Notre univers d\'affaires',
       businessTitle1: 'Neuf domaines.',
